@@ -9,6 +9,7 @@ export default defineConfig({
       'packages/evm-ui',
       'apps/merkl-api',
       'apps/router-api',
+      'apps/main',
     ],
   },
 })

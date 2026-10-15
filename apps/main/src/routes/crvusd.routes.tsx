@@ -1,7 +1,7 @@
 import type { CollateralUrlParams } from '@/loan/types/loan.types'
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router'
 import { redirectTo } from '@ui/hooks/router'
-import { rootRoute } from './root.routes'
+import { curveRoute } from './root.routes'
 import { createSharedRoutes } from './shared.routes'
 
 const CrvUsdClientLayout = lazyRouteComponent(() => import('@/loan/CrvUsdClientLayout'), 'CrvUsdClientLayout')
@@ -16,7 +16,7 @@ const CrvStaking = lazyRouteComponent(
 )
 
 const crvusdLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => curveRoute,
   path: 'crvusd',
   component: CrvUsdClientLayout,
 })

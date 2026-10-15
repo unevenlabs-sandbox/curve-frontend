@@ -55,6 +55,12 @@ const WagmiConfigProvider = ({ children }: { children: ReactNode }) => {
   return config ? <WagmiProvider config={config}>{children}</WagmiProvider> : <Loading />
 }
 
+export const CurveLayout = () => (
+  <WagmiConfigProvider>
+    <NetworkAwareLayout />
+  </WagmiConfigProvider>
+)
+
 export const NetworkAwareLayout = () => {
   const backendMaintenance = useMaintenance(BACKEND_MAINTENANCE)
   const { data: networks } = useNetworksQuery()
@@ -105,7 +111,7 @@ export const RootLayout = ({ children }: { children: ReactNode }) => {
         <ErrorBoundary title={t`Root layout error`} LinkComponent={MuiLink}>
           <OverlayProvider>
             <QueryProvider persister={persister} queryClient={queryClient}>
-              <WagmiConfigProvider>{children}</WagmiConfigProvider>
+              {children}
               {devTools && <ReactQueryDevtools />}
             </QueryProvider>
           </OverlayProvider>

@@ -1,12 +1,12 @@
 import '@/analytics/llamadash'
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router'
 import { redirectTo } from '@ui/hooks/router'
-import { rootRoute } from './root.routes'
+import { curveRoute } from './root.routes'
 import { createSharedRoutes } from './shared.routes'
 
 const PageHome = lazyRouteComponent(() => import('@/analytics/components/PageHome'), 'PageHome')
 
-const analyticsLayoutRoute = createRoute({ getParentRoute: () => rootRoute, path: 'analytics' })
+const analyticsLayoutRoute = createRoute({ getParentRoute: () => curveRoute, path: 'analytics' })
 
 const layoutProps = { getParentRoute: () => analyticsLayoutRoute }
 
