@@ -47,13 +47,13 @@ describe('funding wallet setup', () => {
   it('blocks Arc Gateway in development instead of substituting another Gateway route', () => {
     const result = validateFundingSetup({ ...INPUT, sourceChainId: 5042, walletChainId: 5042 })
     expect(result.setup).toBeUndefined()
-    expect(result.error).toContain('Arc Gateway USDC is not configured for Development')
+    expect(result.error).toContain('Arc Gateway USDC is not available in Development')
   })
 
   it('requires the Arc wallet network for Arc Gateway', () => {
     const result = validateFundingSetup({ ...INPUT, deploymentId: 'stag', sourceChainId: 5042 })
     expect(result.setup).toBeUndefined()
-    expect(result.error).toContain('Switch the source wallet')
+    expect(result.error).toContain('Switch your wallet')
   })
 
   it.each([{ assetChainId: 'arc' }, { ownerChainId: 'arc-gateway' }])(

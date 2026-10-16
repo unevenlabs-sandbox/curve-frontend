@@ -9,7 +9,6 @@ import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import FormHelperText from '@mui/material/FormHelperText'
 import InputLabel from '@mui/material/InputLabel'
 import Link from '@mui/material/Link'
 import MenuItem from '@mui/material/MenuItem'
@@ -24,12 +23,14 @@ import { FormContent } from '@ui/features/forms/components/FormContent'
 import { PageLayout } from '@ui/features/layout/PageLayout'
 import { SizesAndSpaces } from '@ui/features/themes/design/1_sizes_spaces'
 import { FUNDING_DEPLOYMENTS, FUNDING_SOURCES, FUNDING_SOURCE_CHAIN_IDS } from './deployments'
+import { DepositForm } from './DepositForm'
 import {
   isFundingSetupConfirmed,
   isValidRelayRecipient,
   validateFundingSetup,
   type FundingSetup,
 } from './funding-setup'
+import { useDepositOperation } from './useDepositOperation'
 
 const { Spacing } = SizesAndSpaces
 
@@ -37,9 +38,10 @@ const FundingWalletSetup = () => {
   const { address, chainId, status, isConnected, isConnecting, isReconnecting } = useConnection()
   const { connect, disconnect } = useWallet()
   const { mutateAsync: switchChain, isPending: isSwitching } = useSwitchChain()
-  const [deploymentId, setDeploymentId] = useState('dev')
-  const [sourceChainId, setSourceChainId] = useState<number>(8453)
-  const [recipient, setRecipient] = useState('')
+  const deposit = useDepositOperation()
+  const [deploymentId, setDeploymentId] = useState(deposit.operation?.setup.deploymentId ?? 'dev')
+  const [sourceChainId, setSourceChainId] = useState<number>(deposit.operation?.setup.sourceChainId ?? 8453)
+  const [recipient, setRecipient] = useState(deposit.operation?.setup.recipient ?? '')
   const [confirmed, setConfirmed] = useState<FundingSetup>()
   const [error, setError] = useState<string>()
   const [recipientTouched, setRecipientTouched] = useState(false)
@@ -54,6 +56,7 @@ const FundingWalletSetup = () => {
     if (confirmed) setWalletChanged(true)
   }
   const busy = isConnecting || isReconnecting || isSwitching
+  const setupLocked = deposit.busy || !!deposit.operation || !!deposit.storageError
   const validation = validateFundingSetup({
     deploymentId,
     sourceChainId,
@@ -103,14 +106,15 @@ const FundingWalletSetup = () => {
         <Typography variant="headingXl" component="h1">
           Fund Relay wallet
         </Typography>
-        <Typography>Choose the wallet holding your USDC and the Relay wallet that will receive it.</Typography>
+        <Typography>Move USDC to Relay Chain to use in Curve pools.</Typography>
         <FormContent>
           <FormControl fullWidth>
-            <InputLabel id="deployment-label">Deployment</InputLabel>
+            <InputLabel id="deployment-label">Environment</InputLabel>
             <Select
               labelId="deployment-label"
-              label="Deployment"
+              label="Environment"
               value={deploymentId}
+              disabled={setupLocked}
               onChange={event => {
                 setDeploymentId(String(event.target.value))
                 setConfirmed(undefined)
@@ -122,17 +126,14 @@ const FundingWalletSetup = () => {
                 </MenuItem>
               ))}
             </Select>
-            {deploymentId === 'dev' && (
-              <FormHelperText>Choose Staging or Production to set up Arc Gateway USDC.</FormHelperText>
-            )}
           </FormControl>
           <FormControl fullWidth>
-            <InputLabel id="source-asset-label">Source asset</InputLabel>
+            <InputLabel id="source-asset-label">From</InputLabel>
             <Select
               labelId="source-asset-label"
-              label="Source asset"
+              label="From"
               value={sourceChainId}
-              disabled={busy}
+              disabled={busy || setupLocked}
               onChange={event => {
                 setSourceChainId(Number(event.target.value))
                 setConfirmed(undefined)
@@ -148,30 +149,25 @@ const FundingWalletSetup = () => {
           </FormControl>
           {sourceUnavailable && <Alert severity="warning">{validation.error}</Alert>}
           <TextField
-            label="Source wallet"
+            label="Connected wallet"
             value={address ?? ''}
-            placeholder="Connect an EVM wallet"
+            placeholder="Connect your wallet"
             slotProps={{ input: { readOnly: true } }}
             fullWidth
           />
-          {walletChanged && (
-            <Alert severity="warning">
-              The source wallet or network changed. Check both addresses and confirm again.
-            </Alert>
-          )}
+          {walletChanged && <Alert severity="warning">Wallet or network changed. Confirm the addresses again.</Alert>}
           {wrongNetwork && !sourceUnavailable && (
-            <Alert severity="warning">
-              Your source wallet is on a different network. Switch to the selected source network to confirm this setup.
-            </Alert>
+            <Alert severity="warning">Your wallet is on a different network.</Alert>
           )}
           {wrongNetwork && !sourceUnavailable && (
             <Button loading={isSwitching} disabled={busy} onClick={() => void onSwitchNetwork()}>
-              Switch source network
+              Switch network
             </Button>
           )}
           <TextField
-            label="Receiving Relay EVM address"
+            label="Relay wallet address"
             value={recipient}
+            disabled={setupLocked}
             placeholder="0x…"
             fullWidth
             onBlur={() => setRecipientTouched(true)}
@@ -182,43 +178,48 @@ const FundingWalletSetup = () => {
             error={recipientTouched && !isValidRelayRecipient(recipient)}
             helperText={
               recipientTouched && !isValidRelayRecipient(recipient)
-                ? 'Enter a valid, nonzero EVM address.'
-                : 'Use a wallet you control on Relay Chain. The receiving address stays fixed when you change the source wallet.'
+                ? 'Enter a valid Relay wallet address.'
+                : 'Use a Relay Chain wallet you control.'
             }
           />
           <Button
             variant="text"
-            disabled={!isConnected || busy}
+            disabled={!isConnected || busy || setupLocked}
             onClick={() => {
               setRecipient(address ?? '')
               setConfirmed(undefined)
             }}
           >
-            Use connected address
+            Use this wallet
           </Button>
           <FormControlLabel
             control={
               <Checkbox
                 checked={isConfirmed}
-                disabled={!validation.setup || busy}
+                disabled={!validation.setup || busy || deposit.busy}
                 onChange={event => {
                   setConfirmed(event.target.checked ? validation.setup : undefined)
                   setWalletChanged(false)
                 }}
               />
             }
-            label="I control this Relay wallet and have checked both addresses."
+            label="I’ve checked the addresses and control this Relay wallet."
           />
           {error && <Alert severity="error">{error}</Alert>}
-          {isConfirmed && (
-            <Alert severity="success">
-              Wallet setup confirmed for {FUNDING_DEPLOYMENTS.find(deployment => deployment.id === deploymentId)?.label}
-              .
-            </Alert>
-          )}
-          <Alert severity="info">
-            USDC deposits are not available yet. This page currently sets up the wallets for funding.
-          </Alert>
+          <DepositForm
+            setup={isConfirmed ? validation.setup : undefined}
+            sourceChainId={sourceChainId}
+            deploymentId={deploymentId}
+            deposit={deposit}
+            onRestore={() => {
+              if (!deposit.operation) return
+              const { setup } = deposit.operation
+              setDeploymentId(setup.deploymentId)
+              setSourceChainId(setup.sourceChainId)
+              setRecipient(setup.recipient)
+              setConfirmed(undefined)
+            }}
+          />
         </FormContent>
       </Stack>
     </PageLayout>

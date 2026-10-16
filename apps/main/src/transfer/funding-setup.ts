@@ -29,14 +29,14 @@ export const validateFundingSetup = ({
   recipient: string
 }): { setup?: FundingSetup; error?: string } => {
   const deployment = FUNDING_DEPLOYMENTS.find(deployment => deployment.id === deploymentId)
-  if (!deployment) return { error: 'Select a configured deployment.' }
+  if (!deployment) return { error: 'Select an available environment.' }
   const source = FUNDING_SOURCES.find(source => source.id === sourceChainId)
-  if (!source) return { error: 'Select a supported source network.' }
+  if (!source) return { error: 'Select an available network.' }
   if (!source.deployments.includes(deploymentId))
-    return { error: `${source.name} is not configured for ${deployment.label}. Select another source or deployment.` }
-  if (!sourceOwner) return { error: 'Connect the source wallet.' }
-  if (walletChainId !== sourceChainId) return { error: 'Switch the source wallet to the selected network.' }
-  if (!isValidRelayRecipient(recipient)) return { error: 'Enter a valid, nonzero Relay EVM wallet address.' }
+    return { error: `${source.name} is not available in ${deployment.label}.` }
+  if (!sourceOwner) return { error: 'Connect your wallet.' }
+  if (walletChainId !== sourceChainId) return { error: 'Switch your wallet to the selected network.' }
+  if (!isValidRelayRecipient(recipient)) return { error: 'Enter a valid Relay wallet address.' }
   return {
     setup: {
       deploymentId: deployment.id,

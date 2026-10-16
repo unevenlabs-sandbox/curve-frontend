@@ -3,6 +3,7 @@ import { Chain } from '@primitives/network.utils'
 
 // Hub addresses: settlement-protocol @ 9c9cbb65df48e717f011a2809032820df77ebfcf,
 // smart-contracts/deployments/contracts/{dev,stag,prod}.json.
+// Keep this manifest pinned: settlement-networks does not include the current dev/stag Hubs.
 // Keep environment identity separate from chain ID: staging and production share Relay Chain.
 export const FUNDING_DEPLOYMENTS = [
   { id: 'dev', label: 'Development', relayChainId: 537724, hub: '0xa884543c91156098b2e50ae17c3840770b7b55f5' },
@@ -55,3 +56,19 @@ export const FUNDING_SOURCES: readonly FundingSource[] = [
 ]
 
 export const FUNDING_SOURCE_CHAIN_IDS = FUNDING_SOURCES.map(source => source.id)
+
+// Native USDC, with six decimals. Also checked against Oracle mainnet configs
+// and source-chain RPC on 2026-10-16; do not substitute bridged USDC.
+const USDC: Record<number, Address> = {
+  [Chain.Base]: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  [Chain.Arbitrum]: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  [Chain.Polygon]: '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+  [Chain.Ethereum]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+}
+
+export const getDepositRoute = (deploymentId: string, sourceChainId: number) => {
+  const deployment = FUNDING_DEPLOYMENTS.find(deployment => deployment.id === deploymentId)
+  const token = USDC[sourceChainId]
+  const depository = deployment ? __RELAY_DEPOSITORIES__[sourceChainId]?.[deployment.id] : undefined
+  return token && depository ? { token, depository } : undefined
+}
