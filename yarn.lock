@@ -3642,6 +3642,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@relay-protocol/settlement-abis@npm:2.1.2":
+  version: 2.1.2
+  resolution: "@relay-protocol/settlement-abis@npm:2.1.2"
+  checksum: 10c0/2b46d7db310eceb83af90b471fb408d712881868abef6618585bb7c0fe83fff6e8f69663d35f1b59746cd968dffdf8c8b095e137831ff6079b975201e9d402e7
+  languageName: node
+  linkType: hard
+
 "@renovatebot/pep440@npm:4.2.1":
   version: 4.2.1
   resolution: "@renovatebot/pep440@npm:4.2.1"
@@ -11884,6 +11891,7 @@ __metadata:
     "@curvefi/evm-ui": "workspace:^"
     "@curvefi/legacy-ui": "workspace:^"
     "@curvefi/ui": "workspace:^"
+    "@relay-protocol/settlement-abis": "npm:2.1.2"
     "@sentry/vite-plugin": "npm:5.4.0"
     "@types/lodash": "npm:4.17.25"
     "@vitejs/plugin-react": "npm:6.1.1"
