@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import { vercel } from 'vite-plugin-vercel/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { relayDepositories } from './relay-networks.config.mjs'
 
 const {
   API_PROXY_TARGET,
@@ -83,7 +84,10 @@ export default defineConfig(({ command }) => ({
       { find: '@primitives', replacement: resolve(__dirname, '../../packages/primitives/src') },
     ],
   },
-  define: { 'process.env.NODE_ENV': JSON.stringify(command === 'serve' ? 'development' : 'production') },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(command === 'serve' ? 'development' : 'production'),
+    __RELAY_DEPOSITORIES__: JSON.stringify(relayDepositories),
+  },
   ...(isVercelDeployment && {
     builder: {
       // the vercel plugin requires us to build the frontend, it then copies the files in dist

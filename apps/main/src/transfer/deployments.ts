@@ -3,6 +3,7 @@ import { Chain } from '@primitives/network.utils'
 
 // Hub addresses: settlement-protocol @ 9c9cbb65df48e717f011a2809032820df77ebfcf,
 // smart-contracts/deployments/contracts/{dev,stag,prod}.json.
+// Keep this manifest pinned: settlement-networks does not include the current dev/stag Hubs.
 // Keep environment identity separate from chain ID: staging and production share Relay Chain.
 export const FUNDING_DEPLOYMENTS = [
   { id: 'dev', label: 'Development', relayChainId: 537724, hub: '0xa884543c91156098b2e50ae17c3840770b7b55f5' },
@@ -56,15 +57,6 @@ export const FUNDING_SOURCES: readonly FundingSource[] = [
 
 export const FUNDING_SOURCE_CHAIN_IDS = FUNDING_SOURCES.map(source => source.id)
 
-// settlement-protocol @ 13999bd6b0b5504c9d7cb443f123780b5f217333,
-// packages/networks/src/networks/{base,arbitrum,polygon,ethereum}.ts.
-// These are ordinary Depositories, distinct from the Gateway routes.
-const EVM_DEPOSITORIES: Record<string, Address> = {
-  dev: '0x5cb1de3603a71ac2f67b12bfbf095013fe4ac299',
-  stag: '0x9ddc6a541e8f8b50b0996786a3ec275ab4d3a76c',
-  prod: '0x4cd00e387622c35bddb9b4c962c136462338bc31',
-}
-
 // Native USDC, with six decimals. Also checked against Oracle mainnet configs
 // and source-chain RPC on 2026-10-16; do not substitute bridged USDC.
 const USDC: Record<number, Address> = {
@@ -75,7 +67,8 @@ const USDC: Record<number, Address> = {
 }
 
 export const getDepositRoute = (deploymentId: string, sourceChainId: number) => {
+  const deployment = FUNDING_DEPLOYMENTS.find(deployment => deployment.id === deploymentId)
   const token = USDC[sourceChainId]
-  const depository = Object.hasOwn(EVM_DEPOSITORIES, deploymentId) ? EVM_DEPOSITORIES[deploymentId] : undefined
+  const depository = deployment ? __RELAY_DEPOSITORIES__[sourceChainId]?.[deployment.id] : undefined
   return token && depository ? { token, depository } : undefined
 }
