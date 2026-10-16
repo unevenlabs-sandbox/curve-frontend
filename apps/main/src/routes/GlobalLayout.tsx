@@ -31,6 +31,7 @@ import { getHeaderSections } from '@ui/features/layout/Header/header-sections.ut
 import { PageLayout } from '@ui/features/layout/PageLayout'
 import type { Maintenance } from '@ui/features/maintenance/hooks/useMaintenance'
 import { usePathname } from '@ui/hooks/router'
+import { t } from '@ui/lib/i18n'
 
 const useAppStats = (currentApp: AppName, network: NetworkDef) =>
   [
@@ -125,7 +126,10 @@ export const GlobalLayout = <TId extends string, TChainId extends number>({
           currentMenu={currentMenu}
           supportedNetworks={createChainOptions(getSupportedNetworks(networks, currentApp), currentApp)}
           appStats={useAppStats(currentApp, network)}
-          pages={useAppRoutes(network)[currentMenu].map(route => routeToPage(route, routeContext))}
+          pages={[
+            ...useAppRoutes(network)[currentMenu].map(route => routeToPage(route, routeContext)),
+            { label: t`Fund Relay wallet`, href: '/transfer' },
+          ]}
           links={resolveLinks(routeContext)}
           sections={getHeaderSections(formatUrl)}
           hideChains={HIDE_CHAINS}

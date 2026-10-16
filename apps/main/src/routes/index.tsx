@@ -11,10 +11,11 @@ import { daoRoutes } from './dao.routes'
 import { dexRoutes } from './dex.routes'
 import { lendRoutes } from './lend.routes'
 import { llamalendRoutes } from './llamalend.routes'
-import { rootRoute } from './root.routes'
+import { curveRoute, rootRoute } from './root.routes'
+import { transferRoute } from './transfer.routes'
 
 const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => curveRoute,
   path: '/',
   component: Loading, // Redirect is handled by the `useOnChainUnavailable` hook
   head: () => ({ meta: [{ title: 'Curve.finance' }] }),
@@ -26,14 +27,17 @@ export const router = createRouter({
   defaultPendingComponent: Loading,
   defaultPendingMs: Duration.Transition,
   routeTree: rootRoute.addChildren([
-    indexRoute,
-    analyticsRoutes,
-    crvusdRoutes,
-    daoRoutes,
-    dexRoutes,
-    lendRoutes,
-    llamalendRoutes,
-    bridgeRoutes,
+    transferRoute,
+    curveRoute.addChildren([
+      indexRoute,
+      analyticsRoutes,
+      crvusdRoutes,
+      daoRoutes,
+      dexRoutes,
+      lendRoutes,
+      llamalendRoutes,
+      bridgeRoutes,
+    ]),
   ]),
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,

@@ -1,7 +1,7 @@
 import type { PoolAddressParams, PoolUrlParams } from '@/dex/types/main.types'
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router'
 import { redirectTo } from '@ui/hooks/router'
-import { rootRoute } from './root.routes'
+import { curveRoute } from './root.routes'
 import { createSharedRoutes } from './shared.routes'
 
 const DexLayout = lazyRouteComponent(() => import('@/dex/DexLayout'), 'DexLayout')
@@ -13,7 +13,7 @@ const PagePool = lazyRouteComponent(() => import('@/dex/components/PagePool/Page
 const PageManagePool = lazyRouteComponent(() => import('@/dex/components/PageManagePool'), 'ManagePool')
 const PageRouterSwap = lazyRouteComponent(() => import('@/dex/components/PageRouterSwap/Page'), 'PageRouterSwap')
 
-const dexLayoutRoute = createRoute({ getParentRoute: () => rootRoute, path: 'dex', component: DexLayout })
+const dexLayoutRoute = createRoute({ getParentRoute: () => curveRoute, path: 'dex', component: DexLayout })
 
 const layoutProps = { getParentRoute: () => dexLayoutRoute }
 
